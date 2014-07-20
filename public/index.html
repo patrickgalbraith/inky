@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>INKY</title>
+
+    <link rel='stylesheet' href="vendor/bootstrap/css/bootstrap.css">
+    <link rel='stylesheet' href="vendor/bootstrap/theme/flatly/css/bootstrap.min.css">
+    <link rel='stylesheet' href="css/main.css">
+
+    <!--<script src="//cdnjs.cloudflare.com/ajax/libs/async/0.9.0/async.js"></script>-->
+    <script src="//cdn.socket.io/socket.io-1.0.6.js"></script>
+    <script src="vendor/jquery-2.1.0.min.js"></script>
+    <script src='vendor/bootstrap/js/bootstrap.js'></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min.js"></script>
+    <!--<script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.3.0/handlebars.min.js"></script>-->
+
+    <script src='vendor/backbone.iobind/backbone.iosync.js'></script>
+    <script src='vendor/backbone.iobind/backbone.iobind.js'></script>
+    <script src='vendor/uuid.js'></script>
+
+    <script src='js/main.js'></script>
+
+    <script type="text/template" id="template-sidebar">
+        <div class="sidebar">
+            <header class="headline">inky</header>
+            <ul class="nav nav-stacked" id="primary-sidebar">
+                <li class="initial compose"><button class="btn compose-button"><i class="glyphicon glyphicon-plus"></i> COMPOSE</button></li>
+            </ul>
+            <footer>
+                <ul class="nav nav-stacked">
+                    <li><a href="#/settings"><i class="glyphicon glyphicon-cog"></i> Settings</a></li>
+                </ul>
+            </footer>
+        </div>
+    </script>
+
+    <script type="text/template" id="template-posts-aside">
+        <header class="headline"></header>
+        <div class="content">
+            <ul class="nav nav-stacked posts"></ul>
+        </div>
+    </script>
+
+    <script type="text/template" id="template-posts-list-post">
+        <li class="post post-type-link <%= selected ? "active" : "" %> <%= !post.persisted ? "loading" : "" %>">
+            <a href="<%= post.link %>">
+                <div class="votes <%= !post.comments.length ? 'empty' : '' %>"><span><%= post.comments.length %></span></div>
+                <div class="content">
+                    <header><span class="author"><%= post.author %></span> &middot; <span class="date"><%= Inky.Util.timeago(post.created, true) %></span></header>
+                    <article class="title"><%= post.title %></article>
+                    <footer class="location"><%= post.domain %></footer>
+                </div>
+                <div class="image"><img src="<%= post.thumbnail %>"></div>
+            </a>
+        </li>
+    </script>
+
+    <script type="text/template" id="template-view-post">
+        <header class="headline">
+            <div class="left attribution">
+                <div class="top"><span class="author"><%= post.author %></span> &middot; <span class="date"><%= Inky.Util.timeago(post.created) %></span></div>
+                <div class="bottom"><a href="<%= post.group.link %>"><%= post.group.title %></a></div>
+            </div>
+            <div class="right">
+                <a href="#" class="btn btn-outline" data-click="edit">EDIT</a>
+                <a href="#" class="btn btn-outline" data-click="delete">DELETE</a>
+            </div>
+        </header>
+        <div class="content">
+            <article>
+                <header><a href="<%= post.content %>" target="_blank"><%= post.title %></a></header>
+                <div class="description">
+                    <% if(post.embed.type === 'photo') { %>
+                        <img src="<%= post.embed.url %>" alt="">
+                        <p><%= post.embed.description %></p>
+                    <% } else if(post.embed.type === 'rich' || post.embed.type === 'video') { %>
+                        <%= post.embed.html %>
+                        <p><%= post.embed.description %></p>
+                    <% } else { %>
+                        <%= post.excerpt %>
+                    <% } %>
+                </div>
+                <footer>via <a href="<%= post.content %>" target="_blank"><%= post.domain %></a> &raquo;</footer>
+            </article>
+
+            <div class="comments">
+                <% if(post.comment) { %>
+                    <div class="comment">
+                        <header><span class="author"><%= post.author %></span> &middot; <span class="date"><%= Inky.Util.timeago(post.created) %></span></header>
+                        <%= post.comment %>
+                    </div>
+                <% } %>
+
+                <% _.each(post.comments, function(comment) { %>
+                    <div class="comment">
+                        <header><span class="author"><%= comment.author %></span> &middot; <span class="date"><%= Inky.Util.timeago(comment.created) %></span></header>
+                        <%= comment.content %>
+                    </div>
+                <% }); %>
+
+                <div class="comment-form">
+                    <form action="" id="comment-form">
+                        <textarea name="comment" placeholder="Write your response..."></textarea>
+                        <button type="submit" class="btn btn-outline btn-outline-green">POST</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/template" id="template-edit-post">
+        <form action="">
+            <header class="headline">
+                <div class="left">
+                    <select name="group">
+                        <% _.each(groups, function(group) { %>
+                            <option value="<%= group._id %>"><%= group.title %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="right">
+                    <button type="submit" class="btn btn-outline btn-outline-green">
+                        <% if(isNew) { %>
+                            POST
+                        <% } else { %>
+                            SAVE
+                        <% } %>
+                    </button>
+                    <a href="#" class="btn btn-outline" data-click="cancel">CANCEL</a>
+                </div>
+            </header>
+            <div class="content">
+                <input type="url" name="content" placeholder="Paste a link" value="<%= content %>" required <%= !isNew ? 'readonly' : '' %>>
+                <textarea name="comment" placeholder="Write a comment"><%= comment %></textarea>
+            </div>
+        </form>
+    </script>
+
+    <script type="text/template" id="template-settings">
+        <header class="headline">
+            <div class="left">
+                <p><i class="glyphicon glyphicon-cog"></i> Settings</p>
+            </div>
+        </header>
+        <div class="content">
+            <div class="form-group">
+                <label>Handle</label>
+                <input type="text" class="form-control" name="handle" value="<%= author %>" required>
+                <p class="help-block"><b>Note:</b> Changes will only be applied to new posts</p>
+            </div>
+            <hr>
+            <div class="form-group">
+                <label>Groups</label>
+                <ul>
+                    <li>
+                        <span class="num">1</span>
+                        <input type="text" class="form-control" name="group[0]" value="Design">
+                        <button class="btn btn-outline" type="button"><i class="glyphicon glyphicon-chevron-up"></i></button>
+                        <button class="btn btn-outline" type="button"><i class="glyphicon glyphicon-chevron-down"></i></button>
+                        <button class="btn btn-danger" type="button"><i class="glyphicon glyphicon-remove"></i></button>
+                    </li>
+                    <li>
+                        <span class="num">2</span>
+                        <input type="text" class="form-control" name="group[0]" value="Development">
+                        <button class="btn btn-outline" type="button"><i class="glyphicon glyphicon-chevron-up"></i></button>
+                        <button class="btn btn-outline" type="button"><i class="glyphicon glyphicon-chevron-down"></i></button>
+                        <button class="btn btn-danger" type="button"><i class="glyphicon glyphicon-remove"></i></button>
+                    </li>
+                    <li>
+                        <span class="num">3</span>
+                        <input type="text" class="form-control" name="group[0]" value="">
+                        <button class="btn btn-outline" type="button"><i class="glyphicon glyphicon-chevron-up"></i></button>
+                        <button class="btn btn-outline" type="button"><i class="glyphicon glyphicon-chevron-down"></i></button>
+                        <button class="btn btn-danger" type="button"><i class="glyphicon glyphicon-remove"></i></button>
+                    </li>
+                </ul>
+            </div>
+            <hr>
+            <div class="form-group">
+                <label>Notifications</label>
+                <% if(notifyHavePermission) { %>
+                    <p style="margin-top: 10px"><button class="btn btn-outline btn-outline-green" disabled>ENABLED</button></p>
+                <% } else { %>
+                    <p style="margin-top: 10px"><button data-click="notifyRequestPermission" class="btn btn-outline btn-outline-green">REQUEST PERMISSION</button></p>
+                <% } %>
+            </div>
+        </div>
+    </script>
+</head>
+<body>
+    <div id="outer-container">
+        <div class="content-pane"></div>
+    </div>
+</body>
+</html>
