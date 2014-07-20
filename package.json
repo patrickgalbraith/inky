@@ -1,0 +1,25 @@
+{
+  "name": "inky",
+  "version": "0.0.0",
+  "description": "Social link tool for organisations",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "async": "~0.9.0",
+    "cheerio": "~0.17.0",
+    "compression": "~1.0.8",
+    "embedly": "^1.0.2",
+    "express": "~4.5.1",
+    "gm": "~1.16.0",
+    "node-read": "^0.1.4",
+    "node-uuid": "~1.4.1",
+    "request": "~2.37.0",
+    "socket.io": "~1.0.6",
+    "tingodb": "~0.2.1",
+    "webshot": "~0.15.1"
+  }
+}
