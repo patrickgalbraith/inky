@@ -26,7 +26,7 @@ var process = function(url, callback) {
         },
         function(found, _callback) {
             if(found) {
-                return _callback(null, true);
+                return _callback(null, true, false);
             }
 
             //Webshot the webpage and generate image
