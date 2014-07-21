@@ -11,7 +11,7 @@ var EMBEDLY_KEY = config.embedlyApiKey;
 var readabilityTask = function(url, callback) {
     read(url, function(err, article, meta) {
         if (!err) {
-            var allowedTags = '<br><a><p><code><pre><strong><b><em><img>';
+            var allowedTags = '<br><a><p><code><pre><strong><b><em>';
             
             var data = {};
             data.title = article.title;

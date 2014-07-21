@@ -1,4 +1,6 @@
 /node_modules
-/storage/db/*.json
+/storage/db/*
 /public/storage/webshot/*.png
 /app/config.js
+
+!.gitkeep
