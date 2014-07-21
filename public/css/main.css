@@ -304,6 +304,14 @@ a:active {
 .content-main.view-post-pane article p:last-child {
   margin-bottom: 0;
 }
+.content-main.view-post-pane article .screenshot {
+  margin: 20px 0;
+  text-align: center;
+  border: 1px solid #e1e1e1;
+}
+.content-main.view-post-pane article .screenshot img {
+  width: 100%;
+}
 .content-main.view-post-pane article .description {
   margin-bottom: 8px;
 }

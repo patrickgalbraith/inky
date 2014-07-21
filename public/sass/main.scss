@@ -353,6 +353,16 @@ a:active {
                 }
             }
 
+            .screenshot {
+                margin: 20px 0;
+                text-align: center;
+                border: 1px solid #e1e1e1;
+
+                img {
+                    width: 100%;
+                }
+            }
+
             .description {
                 margin-bottom: 8px;
 

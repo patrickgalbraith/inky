@@ -69,6 +69,11 @@
         <div class="content">
             <article>
                 <header><a href="<%= post.content %>" target="_blank"><%= post.title %></a></header>
+                <% if(post.screenshot) { %>
+                    <div class="screenshot">
+                        <img src="<%= post.screenshot %>" alt="">
+                    </div>
+                <% } %>
                 <div class="description">
                     <% if(post.embed.type === 'photo') { %>
                         <img src="<%= post.embed.url %>" alt="">
