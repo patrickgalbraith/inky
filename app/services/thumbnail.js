@@ -1,10 +1,14 @@
-var async = require('async'),
-    path  = require('path'),
-    uuid  = require('node-uuid'),
-    gm    = require('gm');
+var async  = require('async'),
+    path   = require('path'),
+    uuid   = require('node-uuid'),
+    config = require('../config'),
+    gm     = require('gm');
 
-var concurrency = 2;
-var storageDir = path.resolve(__dirname, '../../public/storage/thumb');
+var concurrency = config.thumbnail.concurrency;
+var storageDir = config.thumbnail.storageDir;
+
+if(config.thumbnail.imageLibrary === 'imagemagick')
+    gm = gm.subClass({ imageMagick: true });
 
 var thumbQ = async.queue(function(task, callback) {
     console.log('Generating thumbnail from:', task.source, task.width, task.height);
