@@ -2,9 +2,10 @@ var embedly = require('embedly'),
     async   = require('async'),
     read    = require('node-read'),
     webshot = require('../services/webshot'),
+    config  = require('../config'),
     util    = require('./util');
 
-var EMBEDLY_KEY = 'c00640d5e30a4899af13d6b96710fb87';
+var EMBEDLY_KEY = config.embedlyApiKey;
 
 // Read page using node.read (readability fork)
 var readabilityTask = function(url, callback) {

@@ -37,10 +37,14 @@ var process = function(url, callback) {
                     loadImages: true
                 }
             }, function(err) {
-                return _callback(err, (err === null ? true : false));
+                return _callback(err, (err === null ? true : false), true);
             });
         },
-        function(found, _callback) {
+        function(found, needsThumb, _callback) {
+            if(!needsThumb) {
+                return _callback(null, found);
+            }
+
             thumbnail.q.push([
                 {
                     source: imagePath,

@@ -1,3 +1,4 @@
 /node_modules
-/storage
-/public/storage
+/storage/db/*.json
+/public/storage/webshot/*.png
+/app/config.js
