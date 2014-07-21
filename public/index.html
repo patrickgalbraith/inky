@@ -18,21 +18,20 @@
     <script src='vendor/backbone.iobind/backbone.iosync.js'></script>
     <script src='vendor/backbone.iobind/backbone.iobind.js'></script>
     <script src='vendor/uuid.js'></script>
+    <script src="vendor/desktop-notify.js"></script>
 
     <script src='js/main.js'></script>
 
     <script type="text/template" id="template-sidebar">
-        <div class="sidebar">
-            <header class="headline">inky</header>
-            <ul class="nav nav-stacked" id="primary-sidebar">
-                <li class="initial compose"><button class="btn compose-button"><i class="glyphicon glyphicon-plus"></i> COMPOSE</button></li>
+        <header class="headline">inky</header>
+        <ul class="nav nav-stacked" id="primary-sidebar">
+            <li class="initial compose"><button class="btn compose-button"><i class="glyphicon glyphicon-plus"></i> COMPOSE</button></li>
+        </ul>
+        <footer>
+            <ul class="nav nav-stacked">
+                <li><a href="#/settings"><i class="glyphicon glyphicon-cog"></i> Settings</a></li>
             </ul>
-            <footer>
-                <ul class="nav nav-stacked">
-                    <li><a href="#/settings"><i class="glyphicon glyphicon-cog"></i> Settings</a></li>
-                </ul>
-            </footer>
-        </div>
+        </footer>
     </script>
 
     <script type="text/template" id="template-posts-aside">
@@ -152,40 +151,30 @@
             <hr>
             <div class="form-group">
                 <label>Groups</label>
-                <ul>
-                    <li>
-                        <span class="num">1</span>
-                        <input type="text" class="form-control" name="group[0]" value="Design">
-                        <button class="btn btn-outline" type="button"><i class="glyphicon glyphicon-chevron-up"></i></button>
-                        <button class="btn btn-outline" type="button"><i class="glyphicon glyphicon-chevron-down"></i></button>
-                        <button class="btn btn-danger" type="button"><i class="glyphicon glyphicon-remove"></i></button>
-                    </li>
-                    <li>
-                        <span class="num">2</span>
-                        <input type="text" class="form-control" name="group[0]" value="Development">
-                        <button class="btn btn-outline" type="button"><i class="glyphicon glyphicon-chevron-up"></i></button>
-                        <button class="btn btn-outline" type="button"><i class="glyphicon glyphicon-chevron-down"></i></button>
-                        <button class="btn btn-danger" type="button"><i class="glyphicon glyphicon-remove"></i></button>
-                    </li>
-                    <li>
-                        <span class="num">3</span>
-                        <input type="text" class="form-control" name="group[0]" value="">
-                        <button class="btn btn-outline" type="button"><i class="glyphicon glyphicon-chevron-up"></i></button>
-                        <button class="btn btn-outline" type="button"><i class="glyphicon glyphicon-chevron-down"></i></button>
-                        <button class="btn btn-danger" type="button"><i class="glyphicon glyphicon-remove"></i></button>
-                    </li>
-                </ul>
+                <ul class="groups"></ul>
             </div>
             <hr>
-            <div class="form-group">
+            <div class="form-group notification">
                 <label>Notifications</label>
-                <% if(notifyHavePermission) { %>
+                <% if(!notify.supported) { %>
+                    <p style="margin-top: 10px"><button class="btn btn-outline" disabled>NOT SUPPORTED</button></p>
+                <% } else if(notify.permission) { %>
                     <p style="margin-top: 10px"><button class="btn btn-outline btn-outline-green" disabled>ENABLED</button></p>
                 <% } else { %>
                     <p style="margin-top: 10px"><button data-click="notifyRequestPermission" class="btn btn-outline btn-outline-green">REQUEST PERMISSION</button></p>
                 <% } %>
             </div>
         </div>
+    </script>
+
+    <script type="text/template" id="template-settings-group">
+        <li class="group">
+            <span class="num"><%= num %></span>
+            <input type="text" class="form-control" name="group[<%= num %>]" value="<%= title %>">
+            <button class="btn btn-outline" type="button"><i class="glyphicon glyphicon-chevron-up"></i></button>
+            <button class="btn btn-outline" type="button"><i class="glyphicon glyphicon-chevron-down"></i></button>
+            <button class="btn btn-danger" type="button"><i class="glyphicon glyphicon-remove"></i></button>
+        </li>
     </script>
 </head>
 <body>

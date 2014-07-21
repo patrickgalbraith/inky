@@ -198,9 +198,14 @@ window.socket = io.connect(window.location.origin);
 
             if (!exists) {
                 this.add(data);
+
+                if(data.author !== app.author) {
+                    notify.createNotification('Inky - New Post', {
+                        body: data.content
+                    });
+                }
             } else {
-                data.fromServer = true;
-                exists.set(data);
+                exists.serverChange(data);
             }
         },
         collectionCleanup: function (callback) {
@@ -471,37 +476,80 @@ window.socket = io.connect(window.location.origin);
     Inky.Views.SettingsPane = Backbone.View.extend({
         className: "content-main settings-pane",
 
-        "click [data-click='notifyRequestPermission']": "onNotifyInstall",
+        events: {
+            "click [data-click='notifyRequestPermission']": "onNotifyInstall",
+            "change [name='handle']": "onHandleChange",
+        },
 
         initialize: function() {
             //this.listenTo(this.model.get('posts'), "all", this.render);
-            this.listenTo(this.model.get('groups'), "all", this.render);
+            this.listenTo(this.model.get('groups'), "all", this.renderGroups);
         },
 
         render: function() {
             var template = _.template($('#template-settings').html(), {
                 author: app.author,
-                notifyHavePermission: window.webkitNotifications && window.webkitNotifications.checkPermission() === 0 ? true : false,
-                notifySupport: !!window.webkitNotifications
+                notify: {
+                    permission: notify.permissionLevel() === notify.PERMISSION_GRANTED ? true : false,
+                    supported: notify.isSupported
+                }
             });
 
             this.$el.html(template);
 
+            this.renderGroups();
+
             return this;
         },
 
-        onNotifyInstall: function(e) {
-            //https://github.com/ttsvetko/HTML5-Desktop-Notifications/blob/master/desktop-notify.js
+        renderGroups: function() {
+            var $el = this.$el.find('.groups').empty();
+            var tpl = _.template($('#template-settings-group').html());
+
+            this.model.get('groups').forEach(function(group) {
+                $el.append(tpl({
+                    id: group.id,
+                    num: 0,
+                    title: group.get('title')
+                }));
+            });
+
+            $el.append(tpl({
+                id: 'new',
+                num: 0,
+                title: ''
+            }));
+        },
+
+        onHandleChange: function(e) {
             e.preventDefault();
 
-            if (!window.webkitNotifications)
+            var $input = $(e.currentTarget);
+            var val = $.trim($input.val());
+
+            if(val) {
+                app.author = val;
+
+                if('localStorage' in window && window['localStorage'] !== null) {
+                    localStorage.setItem("handle", val);
+                }
+            }
+        },
+
+        onNotifyInstall: function(e) {
+            var self = this;
+            e.preventDefault();
+
+            if (!notify.isSupported)
                 return; // no notifications support
 
-            var havePermission = window.webkitNotifications.checkPermission();
-
-            if (havePermission !== 0) {
-                window.webkitNotifications.requestPermission();
-            } 
+            if (notify.permissionLevel() === notify.PERMISSION_DEFAULT) {
+                notify.requestPermission(function() {
+                    if(notify.permissionLevel() === notify.PERMISSION_GRANTED) {
+                        self.find('.notification .btn').text('ENABLED').prop('disabled', true);
+                    }
+                });
+            }
         }
     });
 
@@ -549,10 +597,12 @@ window.socket = io.connect(window.location.origin);
             if(!this.author) {
                 this.author = prompt('Please select your handle:');
 
-                if(this.author) {
-                    localStorage.setItem("handle", this.author);
-                } else {
-                    this.author = 'Nameless';
+                if('localStorage' in window && window['localStorage'] !== null) {
+                    if(this.author) {
+                        localStorage.setItem("handle", this.author);
+                    } else {
+                        this.author = 'Nameless';
+                    }
                 }
             }
         },
